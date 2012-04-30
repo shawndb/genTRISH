@@ -1,15 +1,16 @@
 Overview:
 This is the directory for the 'genTRISH' sample application.
 
-This demo is based on the original "NVIDIA" CUDA 4.0 "histogram" sample
-application.  The original sample uses Podlozhnyuk's histogram method.
-This demo adds support for a new histogram method called "TRISH".
+This demo is based on the original "NVIDIA" CUDA 4.0 "histogram" 
+sample application.  The original sample uses Podlozhnyuk's 
+histogram method.  This demo adds support for a new histogram 
+method called "TRISH".
 
 
 TRISH Method: 
-The original version of TRISH only supported 8-bit data (bytes) using
-exactly 256 bins.  This allowed faster GPU code similar to the following 
-CPU snippet...
+The original version of TRISH only supported 8-bit data (bytes) 
+using exactly 256 bins.  This allowed faster GPU code similar 
+to the following CPU snippet...
 
 // Input: an input array named A containing 'n' 8-bit bytes
 // Output: an output array named 'counts' containing 256 32-bit counts
@@ -21,8 +22,8 @@ for (i=0; i< n;i++)
 
 TRISH uses Thread level parallelism (Occupancy = 12.5% = 192/1536), 
 Instruction Level parallelism (loop unrolling & batching), Vector 
-Parallelism (applying arithmetic operations on byte pairs instead of 
-4 individual) bytes to speed up overall performance.
+Parallelism (applying arithmetic operations on byte pairs instead 
+of 4 individual) bytes to speed up overall performance.
 
 More Importantly, TRISH is deterministic and lock-free. IE it doesn't 
 use atomics.  This means that you get similar performance regardless 
@@ -32,22 +33,43 @@ the  underlying data causes when binning & counting.
 
 
 Generalized TRISH:
-This demo contains a generalized version of TRISH that supports other data
-types (I8, I16, I32, I64, U8, U16, U32, I64, F32, F64)
-   I8, I16, I32, I64 => 8-bit, 16-bit, 32-bit, and 64-bit signed integers.
-   U8, U16, U32, U64 => 8-bit, 16-bit, 32-bit, and 64-bit unsigned integers.
-   F32, F64 => single precision (32-bit) and double precision (64-bit) reals.
+This demo contains a generalized version of TRISH that supports other 
+data types (I8, I16, I32, I64, U8, U16, U32, I64, F32, F64)
+   I8, I16, I32, I64:
+      8-bit, 16-bit, 32-bit, and 64-bit signed integers.
+   U8, U16, U32, U64: 
+      8-bit, 16-bit, 32-bit, and 64-bit unsigned integers.
+   F32, F64:
+      Single precision (32-bit) and Double precision (64-bit) reals.
 
-It also supports variable number of bins in the range [1..252].  Theoretically,
-it could support up to 256 bins but we reserve the last 4 bins for marking special
-cases.
+The code is also generalized to support a 1D linear mapping operation
+for binning.  
+Inputs:  [minVal, maxVal] and 'numBins'
+   The input range =[min,max] to bin
+   and the nBins to to break the range into
+Example:  [min,max] = [20,219] and numBins = 100
+
+Note: 'numBins'
+The current code can't support greater than 256 bins as it would put to much
+pressure on shared memory on Fermi architecture GPUs.
+   16 KB = 64 threads * 64 lanes * 4 bytes per lane 
+   3 concurrent thread blocks = 48 KB / 16 KB
+   
+Theoretically,we could support up to 256 bins but we only support
+up to 252 bins, as we reserve the last 4 bins for marking various special cases.
+   nBins+0 = Catch floating point results where value == maxVal
+   nBins+1 = Count values below min (value < min)
+   nBins+2 = count values above max (value > max)
+   nBins+3 = unused currently
 
 
 Mapper Object:
 The code uses a special transform object to convert from "values" to "bins".
 This is similar in spirit to a "functor" object.  But, since we try to 
-process 4 items at a time for better ILP performance, the functor approach can't capture
-all the different inputs and outputs and transform methods.  Take a look at the include file MapToBin.h to see how this works.
+process 4 items at a time for better ILP performance, the functor interface can't 
+capture all the different inputs and outputs and transform methods.  
+
+Take a look at the include file MapToBin.h to see how this works.
 
 Basically a Mapper template contains the following Methods
     A default constructor that does nothing
@@ -78,28 +100,37 @@ Bin = (val - Mu) * Alpha.
 Where  Mu = (val-MinVal) for floats or (val-(minVal-0.5) for integers.
 and Alpha = n/(max-min) for floats or n/(max-min+1) for integers.
 
+Mu and Alpha are initialized exactly once inside the ::Initiate() method...
+
 
 Design Issues:
 1. Values per Storage Value:
 The current design still feels awkward as I don't have a clean interface
-as the code currently has to differentiate between
+The current code has to differentiate between
    1-byte data types (4 byte values contained per 32-bit storage value)
    2-byte data types (2 word values contained per 32-bit storage value)
    4-byte & 8-byte data types (1 original value = 1 storage value)
 
 2. Formulas:
-I current have hard-coded 3 formulas 
-Formula #1 (described above) using floats for the actual conversion
-Formula #2 & #3 described in MapToBin.h that use integers for the actual
-conversion.
-   - Unfortunately, these methods are slower (require integer divide)
-     and are more likely to overflow the input range, so I don't use them
-     currently.
+I currently have hard-coded 3 formulas 
 
-3. Overflow:  Converting from values to bins may overflow the conversion
-   type resulting in 'out of range' array accesses which will crash the code.  
-   Make sure you understand your input data range and conversion ranges so
-   that you can prevent this from happening.
+Formula #1 (as described above) using floats for the actual conversion
+
+Formula #2 & #3 described in MapToBin.h that use integers for a more
+direct converison.
+   - Unfortunately, these methods are slower (they require integer divides)
+     and are more likely to overflow the input range, so I don't use them
+     currently and may eliminate this code in the future.
+
+3. Overflow/Upscale:  Converting from values to bins may overflow the 
+   conversion type resulting in 'out of range' array accesses which will 
+   crash the code. Make sure you understand your input data range and 
+   conversion ranges so that you can prevent this from happening.
+   For Example:  Converting from U16s values to bins may require F32s for 
+   sufficient precision during the conversion to avoid generating incorrect 
+   bin values.  Similarly U32s may require F64's.  Unfortunately for I64's
+   and U64's there isn't a F128 value to upscale to, so you need to carefully 
+   understand your data to prevent this issue from biting you.
 
 4. Clamping: The mapper objects also support clamping values outside the
    specified [min,max] range and counting those underflow and overflow values
@@ -107,6 +138,15 @@ conversion.
    logic hurts performance as we need to do extra tests but helps prevent
    crashes due to input values that are outside the expected range.
 
+5. Sign extension:  Converting from 32-bit storage values to 4 I8's or 2 I16's
+   requires sign extending the intermediate values for correct behavior.
+   My current approach uses 3 instructions to sign-extend and thus will slow
+   down overall performance compared to unsigned ints (U8, U16)
+       U32 val = storageVal & 0xFFFFu;	// get 16 bit value
+       val <<= 16u;   // Shift sign to 32-bit position
+       I32 iVal = (I32)val; // convert to signed int
+       iVal >>= 16u;  // Shift back to correct value (sign-extend side effect)
+   There is probably a better faster way but I haven't pursued it yet...
 
 
 Misc Notes:
