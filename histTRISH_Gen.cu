@@ -10110,8 +10110,8 @@ void genTrishFloatF32
                F32,     // Conversion Type
                U32,     // Bin Type
                1u,      // Formula = #1: B=(A-Mu)*Alpha; where Mu = Min - 0.5; and Alpha = n/(max-min+1);
-               0u,      // Range check for values < min
-               0u       // Range check for values > max
+               1u,      // Range check for values < min
+               1u       // Range check for values > max
             > MapperF32;
 
 	K1_TRISH_CountRows_GEN_B4
