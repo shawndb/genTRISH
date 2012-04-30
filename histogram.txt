@@ -1,0 +1,110 @@
+Initializing data...
+...allocating CPU memory.
+...generating input data
+...allocating GPU memory and copying input data
+
+Starting up 64-bin histogram...
+
+Running 64-bin GPU histogram for 67108864 bytes (16 runs)...
+
+histogram64() time (average) : 0.00576 sec, 11643.7255 MB/sec
+
+histogram64, Throughput = 11643.7255 MB/s, Time = 0.00576 s, Size = 67108864 Bytes, NumDevsUsed = 1, Workgroup = 64
+
+Validating GPU results...
+ ...reading back GPU results
+ ...histogram64CPU()
+ ...comparing the results...
+ ...64-bin histograms match
+
+Shutting down 64-bin histogram...
+
+
+Initializing 256-bin histogram...
+Running 256-bin GPU histogram for 67108864 bytes (16 runs)...
+
+histogram256() time (average) : 0.01029 sec, 6522.2415 MB/sec
+
+histogram256, Throughput = 6522.2415 MB/s, Time = 0.01029 s, Size = 67108864 Bytes, NumDevsUsed = 1, Workgroup = 192
+
+Validating GPU results...
+ ...reading back GPU results
+ ...histogram256CPU()
+ ...comparing the results
+ ...256-bin histograms match
+
+Shutting down 256-bin histogram...
+
+
+Initializing Generalized TRISH histogram on byte data...
+minVal = 20, maxVal = 219, numBins = 100
+Running Generalized TRISH histogram for 67108864 bytes (16 runs)...
+
+genTrishByteU8() time (average) : 0.04490 sec, 1494.5538 MB/sec
+
+genTrishByteU8, Throughput = 1494.5538 MB/s, Time = 0.04490 s, Size = 67108864 Bytes, NumDevsUsed = 1, Workgroup = 192
+
+Validating GPU results...
+ ...reading back GPU results
+ ...CPU_histogramGenByte_B1()
+ ...comparing the results
+ ...histograms match
+
+Shutting down Generalized TRISH histogram on byte Data...
+
+
+Initializing Generalized TRISH histogram on word data...
+minVal = 5000, maxVal = 57000, numBins = 100
+Running Generalized TRISH histogram for 33554432 words (16 runs)...
+
+genTrishWordU16() time (average) : 0.02570 sec, 2611.2700 MB/sec
+
+genTrishWordU16, Throughput = 2611.2700 MB/s, Time = 0.02570 s, Size = 67108864 Bytes, NumDevsUsed = 1, Workgroup = 192
+
+Validating GPU results...
+ ...reading back GPU results
+ ...CPU_histogramGenWord_B2()
+ ...comparing the results
+ ...histograms match
+
+Shutting down Generalized TRISH histogram on word Data...
+
+
+...generating DWORD input data
+Initializing Generalized TRISH histogram on DWORD data...
+minVal = 5000, maxVal = 569999, numBins = 252
+Running Generalized TRISH histogram for 16777216 dwords (16 runs)...
+
+genTrishDWordU32() time (average) : 0.02478 sec, 2707.6622 MB/sec
+
+genTrishDWordU32, Throughput = 2707.6622 MB/s, Time = 0.02478 s, Size = 67108864 Bytes, NumDevsUsed = 1, Workgroup = 192
+
+Validating GPU results...
+ ...reading back GPU results
+ ...CPU_histogramGenDWord_B4()
+ ...comparing the results
+ ...histograms match
+
+Shutting down Generalized TRISH histogram on DWORD Data...
+
+
+...generating float input data
+Initializing Generalized TRISH histogram on FLOAT data...
+minVal = 0, maxVal = 0, numBins = 0
+Running Generalized TRISH histogram for 16777216 floats (16 runs)...
+
+genTrishDWordF32() time (average) : 0.02126 sec, 3156.1087 MB/sec
+
+genTrishDWordF32, Throughput = 3156.1087 MB/s, Time = 0.02126 s, Size = 67108864 Bytes, NumDevsUsed = 1, Workgroup = 192
+
+Validating GPU results...
+ ...reading back GPU results
+ ...CPU_histogramGenFloat_B4()
+ ...comparing the results
+ ...histograms match
+
+Shutting down Generalized TRISH histogram on FLOAT Data...
+
+
+Shutting down...
+[histogram] - Test Summary

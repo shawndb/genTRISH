@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="histogram_gold.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="histogram256.cu">
+      <Filter>source</Filter>
+    </CudaCompile>
+    <CudaCompile Include="histogram64.cu">
+      <Filter>source</Filter>
+    </CudaCompile>
+    <CudaCompile Include="histTRISH_Gen.cu">
+      <Filter>source</Filter>
+    </CudaCompile>
+    <CudaCompile Include="histTRISH_gold.cu">
+      <Filter>source</Filter>
+    </CudaCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="include">
+      <UniqueIdentifier>{33a5dd97-a2c1-4840-80b8-477161104012}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source">
+      <UniqueIdentifier>{5dbf7388-098a-408b-9903-ad990068d9ce}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="histogram_common.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseDefs.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="MapToBin.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="TRISH_traits.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Extract.h">
+      <Filter>include</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
